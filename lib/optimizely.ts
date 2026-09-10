@@ -426,20 +426,14 @@ const _fetchAllThemeManagers = cache(async function fetchAllThemeManagers(locale
 
 /**
  * Returns the ThemeManager instance whose frontEndDomain matches `domain`,
- * or null if no match is found.
- *
- * Returning null on no match is intentional: an unrecognised domain (e.g. a
- * fresh Vercel deployment whose URL hasn't been registered in any ThemeManager
- * yet) should render with the default CSS token values ("generic default-theme
- * branding") rather than inheriting whatever theme was most recently published.
- * All callers (Header, Footer, layout) handle null gracefully via optional
- * chaining and hardcoded fallback values.
+ * falling back to the first available instance if no domain matches (e.g.
+ * localhost, a Vercel preview URL, or any host not registered in the CMS).
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function getSiteSettings(domain = '', locale = DEFAULT_LOCALE): Promise<any | null> {
   const items = await _fetchAllThemeManagers(locale)
   if (!items.length) return null
-  return items.find((i: any) => i.frontEndDomain === domain) ?? null
+  return items.find((i: any) => i.frontEndDomain === domain) ?? items[0]
 }
 
 /**
